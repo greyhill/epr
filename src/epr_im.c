@@ -17,18 +17,16 @@ bool compute_offset(size_t nd, size_t* dims, int32_t* diffs,
         size_t idim = dims[id];
         int32_t idiff = diffs[id];
 
-        ssize_t ipd = ip % idim;
-        ssize_t ipd1 = 0;
+        int64_t ipd = ip % idim;
+        int64_t ipd1 = 0;
         if(reverse) {
             ipd1 = ipd - idiff;
         } else {
             ipd1 = ipd + idiff;
         }
-        if(ipd1 < 0 || ipd1 >= (ssize_t)idim) {
+        if(ipd1 < 0 || ipd1 >= (int64_t)idim) {
             return false;
         }
-
-        fprintf(stderr, "%zu %zu\n", ip, ipd1);
 
         out_accum += stride_accum * ipd1;
         ip /= idim;
@@ -88,7 +86,6 @@ void eprImage_grad(size_t nd,
                    const float* image,
                    float* out) {
     size_t np = compute_np(nd, dims);
-    fprintf(stderr, "np: %zu\n", np);
 
 #pragma omp parallel for
     for(size_t ip=0; ip<np; ++ip) {
@@ -100,12 +97,10 @@ void eprImage_grad(size_t nd,
             wip = weights[ip];
         }
 
-        fprintf(stderr, "npot: %zu\n", npot);
         for(size_t ipot=0; ipot<npot; ++ipot) {
             size_t ip1=0;
             struct eprPotential* pot = diff_pots[ipot];
             if(pot->grad_fn == NULL) {
-                fprintf(stderr, "grad_fn is null :-(\n");
                 continue;
             }
 
